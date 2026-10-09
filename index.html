@@ -311,13 +311,31 @@ function fmtAmt(v) {
 }
 
 function fmtDate(v) {
-  if (!v) return "";
+  if (v === null || v === undefined || v === "") return "";
+  const p2 = n => String(n).padStart(2, "0");
   try {
-    const d = (v instanceof Date) ? v : new Date(v);
-    if (isNaN(d)) return String(v);
-    return String(d.getDate()).padStart(2,"0") + "." +
-           String(d.getMonth()+1).padStart(2,"0") + "." +
-           d.getFullYear();
+    // Excel serial number (days since 30.12.1899) — convert via UTC, immune to timezone shifts
+    if (typeof v === "number" && isFinite(v)) {
+      const d = new Date(Math.round((v - 25569) * 86400000));
+      return p2(d.getUTCDate()) + "." + p2(d.getUTCMonth() + 1) + "." + d.getUTCFullYear();
+    }
+    // String dates: pass DD.MM.YYYY through unchanged; convert YYYY-MM-DD
+    if (typeof v === "string") {
+      const s = v.trim();
+      let m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+      if (m) return p2(m[1]) + "." + p2(m[2]) + "." + m[3];
+      m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (m) return p2(m[3]) + "." + p2(m[2]) + "." + m[1];
+      const d = new Date(s);
+      if (!isNaN(d)) return p2(d.getDate()) + "." + p2(d.getMonth()+1) + "." + d.getFullYear();
+      return s;
+    }
+    // Date object (defensive): round to nearest minute to undo SheetJS ms rounding (-1 day bug)
+    if (v instanceof Date && !isNaN(v)) {
+      const d = new Date(Math.round(v.getTime() / 60000) * 60000);
+      return p2(d.getDate()) + "." + p2(d.getMonth()+1) + "." + d.getFullYear();
+    }
+    return String(v);
   } catch { return String(v); }
 }
 
@@ -343,7 +361,7 @@ function loadFile(f) {
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      const wb = XLSX.read(new Uint8Array(e.target.result), { type: "array", cellDates: true });
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" }); // dates stay as Excel serials — fmtDate converts them timezone-safe
       const ws = wb.Sheets[wb.SheetNames[0]];
       const raw = XLSX.utils.sheet_to_json(ws, { defval: "" });
       if (!raw.length) { showErr("No data rows found in the file."); return; }
