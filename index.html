@@ -199,7 +199,7 @@ footer {
       <div class="template-card-icon">▦</div>
       <div class="template-card-body">
         <div class="template-card-label">ZFI_XLS_POST</div>
-        <div class="template-card-sub">SAP ECC 6.0 · Payroll Posting · 10 columns (A–J)</div>
+        <div class="template-card-sub">SAP ECC 6.0 · Payroll Posting · 11 columns (A–K)</div>
         <table class="col-table">
           <thead>
             <tr><th>Col</th><th>H row 1 (K-field label)</th><th>H row 2 (P-field label)</th><th>K row</th><th>P row</th><th>Rule</th></tr>
@@ -207,14 +207,15 @@ footer {
           <tbody>
             <tr><td class="col-letter">A</td><td>—</td><td>—</td><td>K</td><td>P</td><td></td></tr>
             <tr><td class="col-letter">B</td><td>company code</td><td>account type (S/K/D)</td><td>Company Code</td><td>Account Type</td><td><span class="col-badge badge-fixed">S (PK40/50) · K (PK21/31)</span></td></tr>
-            <tr><td class="col-letter">C</td><td>documenttype</td><td>account nr</td><td>Document Type</td><td>G/L Account Nr</td><td><span class="col-badge badge-mapped">AB/ZA → SA</span></td></tr>
-            <tr><td class="col-letter">D</td><td>document date</td><td>amount debit</td><td>Document Date</td><td>Amount Debit</td><td><span class="col-note">PK 40</span></td></tr>
-            <tr><td class="col-letter">E</td><td>posting date</td><td>amount credit</td><td>Posting Date</td><td>Amount Credit</td><td><span class="col-note">PK 50</span></td></tr>
-            <tr><td class="col-letter">F</td><td>document header text</td><td>—</td><td>Doc Header Text</td><td>—</td><td></td></tr>
+            <tr><td class="col-letter">C</td><td>documenttype</td><td>posting key</td><td>Document Type</td><td>Posting Key (40/50)</td><td><span class="col-badge badge-mapped">AB/ZA → SA</span></td></tr>
+            <tr><td class="col-letter">D</td><td>document date</td><td>account nr</td><td>Document Date</td><td>G/L Account Nr</td><td></td></tr>
+            <tr><td class="col-letter">E</td><td>posting date</td><td>amount debit</td><td>Posting Date</td><td>Amount Debit</td><td><span class="col-note">PK 40</span></td></tr>
+            <tr><td class="col-letter">F</td><td>document header text</td><td>amount credit</td><td>Doc Header Text</td><td>Amount Credit</td><td><span class="col-note">PK 50</span></td></tr>
             <tr><td class="col-letter">G</td><td>reference nr</td><td>—</td><td>Reference Nr</td><td>—</td><td></td></tr>
-            <tr><td class="col-letter">H</td><td>currency</td><td>line item text</td><td>Currency</td><td>Line Item Text</td><td></td></tr>
-            <tr><td class="col-letter">I</td><td>—</td><td>cost center</td><td>—</td><td>Cost Center</td><td></td></tr>
-            <tr><td class="col-letter">J</td><td>—</td><td>internal order</td><td>—</td><td>Internal Order</td><td></td></tr>
+            <tr><td class="col-letter">H</td><td>currency</td><td>tax code</td><td>Currency</td><td>Tax Code</td><td></td></tr>
+            <tr><td class="col-letter">I</td><td>—</td><td>line item text</td><td>—</td><td>Line Item Text</td><td><span class="col-note">"Salary " + posting date if empty</span></td></tr>
+            <tr><td class="col-letter">J</td><td>—</td><td>cost center</td><td>—</td><td>Cost Center</td><td></td></tr>
+            <tr><td class="col-letter">K</td><td>—</td><td>internal order</td><td>—</td><td>Internal Order</td><td></td></tr>
           </tbody>
         </table>
         <div style="font-size:10px;color:#888;margin-top:8px">
@@ -426,27 +427,24 @@ function buildSummary() {
 
 /* ── ROW BUILDER ── */
 /*
-  Output structure — 9 columns (A–I):
+  Output structure — 11 columns (A–K):
   Col A : row type  (H / K / P)
-  Col B : H1=company code     H2=account type     K=company code    P=account type (always S)
-  Col C : H1=documenttype     H2=account nr       K=doc type        P=GL account nr
-  Col D : H1=document date    H2=amount debit     K=doc date        P=debit amount
-  Col E : H1=posting date     H2=amount credit    K=posting date    P=credit amount
-  Col F : H1=document header text  H2=(blank)     K=header text     P=(blank)
-  Col G : H1=currency         H2=(blank)          K=currency        P=(blank)
-  Col H : H1=(blank)          H2=line item text   K=(blank)         P=line item text
-  Col I : H1=(blank)          H2=cost center      K=(blank)         P=cost center
+  Col B : H1=company code          H2=account type (S/K/D)  K=company code   P=account type
+  Col C : H1=documenttype          H2=posting key           K=doc type (SA)  P=posting key (40/50/...)
+  Col D : H1=document date         H2=account nr            K=doc date       P=GL account nr
+  Col E : H1=posting date          H2=amount debit          K=posting date   P=debit amount
+  Col F : H1=document header text  H2=amount credit         K=header text    P=credit amount
+  Col G : H1=reference nr          H2=(blank)               K=reference      P=(blank)
+  Col H : H1=currency              H2=tax code              K=currency       P=tax code
+  Col I : H1=(blank)               H2=line item text        K=(blank)        P=line item text ("Salary <posting date>" if source Text empty)
+  Col J : H1=(blank)               H2=cost center           K=(blank)        P=cost center
+  Col K : H1=(blank)               H2=internal order        K=(blank)        P=internal order
 */
 function buildRows() {
-  // Exact structure from screenshot — 8 columns A-H:
-  // H1: H | company code     | documenttype  | document date | posting date  | document header text | reference nr | currency
-  // H2: H | account type     | account nr    | amount debit  | amount credit |                      |              | line item text | cost center | internal order
-  // K:  K | company code     | doc type (SA) | DD.MM.YYYY    | DD.MM.YYYY    | header text          | reference    | currency
-  // P:  P | S                | GL account    | debit (PK40)  | credit (PK50) |                      |              | line item text | cost center | internal order
 
   const rows = [
-    ["H","company code","documenttype","document date","posting date","document header text","reference nr","currency"],
-    ["H","account type (S/K/D)","account nr","amount debit","amount credit","","","line item text","cost center","internal order"]
+    ["H","company code","documenttype","document date","posting date","document header text","reference nr","currency","","",""],
+    ["H","account type (S/K/D)","posting key","account nr","amount debit","amount credit","","tax code","line item text","cost center","internal order"]
   ];
 
   const docs = [...new Set(parsedData.map(r => r["Document Header Text"]).filter(Boolean))];
@@ -458,37 +456,45 @@ function buildRows() {
     const currency  = f["Local Currency"] || f["Currency"] || f["W\u00e4hrung"] || f["Wahrung"] || "";
     const reference = f["Reference"] || f["Reference Nr"] || f["Referenz"] || "";
 
-    // K row — 8 columns matching H row 1
+    // K row — columns A–H matching H row 1
+    const postDate = fmtDate(f["Posting Date"]);
+
     rows.push([
       "K",
-      f["Company Code"] || "",        // company code
-      mapDocType(f["Document Type"]), // documenttype -> SA
-      fmtDate(f["Document Date"]),    // document date
-      fmtDate(f["Posting Date"]),     // posting date
-      docId,                          // document header text
-      reference,                      // reference nr
-      currency                        // currency
+      String(f["Company Code"] || ""), // company code
+      mapDocType(f["Document Type"]),  // documenttype -> SA
+      fmtDate(f["Document Date"]),     // document date
+      postDate,                        // posting date
+      docId,                           // document header text
+      reference,                       // reference nr
+      currency                         // currency
     ]);
 
-    // P rows — 10 columns matching H row 2
+    // P rows — 11 columns matching H row 2
     lines.forEach(l => {
       const pk = parseFloat(l["Posting Key"]);
       const a  = l["Amount in local currency"];
+      const isDebit  = [40,21,24,27,29].includes(pk);  // debit-side posting keys
+      const isCredit = [50,31,34,37,39].includes(pk);  // credit-side posting keys
+      const lineText = (l["Text"] && String(l["Text"]).trim())
+        ? String(l["Text"]).trim()
+        : ("Salary " + postDate);     // default line item text when source has none
       rows.push([
         "P",
-        ([21,22,29,31,32,39].includes(pk) ? "K" : "S"),  // K=Vendor (PK 21/31), S=GL (PK 40/50)
-        l["G/L Account"] || "",       // account nr
-        pk === 40 ? fmtAmt(a) : "",   // amount debit  (PK 40)
-        pk === 50 ? fmtAmt(a) : "",   // amount credit (PK 50)
-        "",                           // blank (aligns with header text col)
-        "",                           // blank (aligns with reference col)
-        l["Text"]        || "",       // line item text
+        ([21,22,24,25,27,29,31,32,34,35,37,38,39].includes(pk) ? "K" : "S"),  // K=Vendor keys, S=GL (PK 40/50)
+        isNaN(pk) ? "" : pk,          // posting key (40/50/...)
+        String(l["G/L Account"] || ""), // account nr
+        isDebit  ? fmtAmt(a) : "",    // amount debit
+        isCredit ? fmtAmt(a) : "",    // amount credit
+        "",                           // blank (aligns with reference nr col)
+        l["Tax Code"] || l["Tax code"] || "",  // tax code
+        lineText,                     // line item text
         mapCostCenter(l["Company Code"] || "", l["Cost Center"]),  // cost center (NEW→OLD mapping)
-        l["Order"]       || ""        // internal order
+        String(l["Order"] || "")      // internal order
       ]);
     });
 
-    rows.push(Array(10).fill(""));
+    rows.push(Array(11).fill(""));
   });
 
   return rows;
@@ -502,7 +508,7 @@ function generateFile() {
   const wb   = XLSX.utils.book_new();
   const ws   = XLSX.utils.aoa_to_sheet(rows);
 
-  ws["!cols"] = [4,16,14,14,14,26,14,10,20,14].map(w => ({ wch: w }));
+  ws["!cols"] = [4,18,13,13,14,22,14,10,20,14,14].map(w => ({ wch: w }));
 
   XLSX.utils.book_append_sheet(wb, ws, "Upload");
   const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
