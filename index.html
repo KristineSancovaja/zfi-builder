@@ -290,6 +290,11 @@ const CC_MAP = {
   }
 };
 
+/* ── CURRENCY FALLBACK: used only when the source file has no currency column ── */
+const CO_CURRENCY = {
+  "4061": "PLN"
+};
+
 function mapCostCenter(companyCode, cc) {
   if (!cc || !companyCode) return cc || "";
   const ccStr = cc.toString().trim();
@@ -471,7 +476,9 @@ function buildRows() {
     const lines = parsedData.filter(r => r["Document Header Text"] === docId);
     const f = lines[0];
 
-    const currency  = f["Local Currency"] || f["Currency"] || f["W\u00e4hrung"] || f["Wahrung"] || "";
+    const currency  = f["Local Currency"] || f["Currency"] || f["Currency Key"] ||
+                      f["W\u00e4hrung"] || f["Wahrung"] || f["Waluta"] || f["WAERS"] ||
+                      CO_CURRENCY[String(f["Company Code"] || "").trim()] || "";
     const reference = f["Reference"] || f["Reference Nr"] || f["Referenz"] || "";
 
     // K row — columns A–H matching H row 1
