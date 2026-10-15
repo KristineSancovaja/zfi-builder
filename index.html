@@ -184,6 +184,7 @@ footer {
       <strong>Mapping rules applied automatically:</strong><br>
       Document Type <code>AB</code> and <code>ZA</code> → always written as <code>SA</code> in output &nbsp;·&nbsp;
       Account Type → <code>S</code> (GL/P&amp;L) for Posting Key 40/50 &nbsp;&middot;&nbsp; <code>K</code> (Vendor) for Posting Key 21/31<br>
+      Cost Center (co.4061): <code>4061200001→7000</code> &nbsp;<code>4061200002→7002</code> &nbsp;<code>4061390001→8050</code> &nbsp;<code>4061200003→7010</code> &nbsp;<code>4061200004→8300</code> &nbsp;<code>4061200005→8400</code>
     </span>
   </div>
 
@@ -212,7 +213,7 @@ footer {
             <tr><td class="col-letter">F</td><td>document header text</td><td>—</td><td>Doc Header Text</td><td>—</td><td></td></tr>
             <tr><td class="col-letter">G</td><td>reference nr</td><td>—</td><td>Reference Nr</td><td>—</td><td></td></tr>
             <tr><td class="col-letter">H</td><td>currency</td><td>line item text</td><td>Currency</td><td>Line Item Text</td><td><span class="col-note">as in source</span></td></tr>
-            <tr><td class="col-letter">I</td><td>—</td><td>cost center</td><td>—</td><td>Cost Center</td><td><span class="col-note">as in source</span></td></tr>
+            <tr><td class="col-letter">I</td><td>—</td><td>cost center</td><td>—</td><td>Cost Center</td><td><span class="col-badge badge-mapped">NEW → OLD (4061)</span></td></tr>
             <tr><td class="col-letter">J</td><td>—</td><td>internal order</td><td>—</td><td>Internal Order</td><td></td></tr>
           </tbody>
         </table>
@@ -507,7 +508,7 @@ function buildRows() {
         isCredit ? fmtAmt(a) : "",
         "", "",
         (l["Text"] ? String(l["Text"]).trim() : ""),
-        String(l["Cost Center"] == null ? "" : l["Cost Center"]).trim(),
+        mapCostCenter(l["Company Code"] || "", l["Cost Center"]),
         String(l["Order"] || "")
       ]);
     });
