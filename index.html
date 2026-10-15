@@ -184,7 +184,6 @@ footer {
       <strong>Mapping rules applied automatically:</strong><br>
       Document Type <code>AB</code> and <code>ZA</code> → always written as <code>SA</code> in output &nbsp;·&nbsp;
       Account Type → <code>S</code> (GL/P&amp;L) for Posting Key 40/50 &nbsp;&middot;&nbsp; <code>K</code> (Vendor) for Posting Key 21/31<br>
-      Cost Center (co.4061): <code>4061200001→7000</code> &nbsp;<code>4061200002→7002</code> &nbsp;<code>4061390001→8050</code> &nbsp;<code>4061200003→7010</code> &nbsp;<code>4061200004→8300</code> &nbsp;<code>4061200005→8400</code>
     </span>
   </div>
 
@@ -199,23 +198,22 @@ footer {
       <div class="template-card-icon">▦</div>
       <div class="template-card-body">
         <div class="template-card-label">ZFI_XLS_POST</div>
-        <div class="template-card-sub">SAP ECC 6.0 · Payroll Posting · 11 columns (A–K)</div>
+        <div class="template-card-sub">SAP ECC 6.0 · Payroll Posting · 10 columns (A–J)</div>
         <table class="col-table">
           <thead>
             <tr><th>Col</th><th>H row 1 (K-field label)</th><th>H row 2 (P-field label)</th><th>K row</th><th>P row</th><th>Rule</th></tr>
           </thead>
           <tbody>
             <tr><td class="col-letter">A</td><td>—</td><td>—</td><td>K</td><td>P</td><td></td></tr>
-            <tr><td class="col-letter">B</td><td>company code</td><td>account type (S/K/D)</td><td>Company Code</td><td>Account Type</td><td><span class="col-badge badge-fixed">S (PK40/50) · K (PK21/31)</span></td></tr>
-            <tr><td class="col-letter">C</td><td>documenttype</td><td>posting key</td><td>Document Type</td><td>Posting Key (40/50)</td><td><span class="col-badge badge-mapped">AB/ZA → SA</span></td></tr>
-            <tr><td class="col-letter">D</td><td>document date</td><td>account nr</td><td>Document Date</td><td>G/L Account Nr</td><td></td></tr>
-            <tr><td class="col-letter">E</td><td>posting date</td><td>amount debit</td><td>Posting Date</td><td>Amount Debit</td><td><span class="col-note">PK 40</span></td></tr>
-            <tr><td class="col-letter">F</td><td>document header text</td><td>amount credit</td><td>Doc Header Text</td><td>Amount Credit</td><td><span class="col-note">PK 50</span></td></tr>
+            <tr><td class="col-letter">B</td><td>company code</td><td>account type (S/K/D)</td><td>Company Code</td><td>Account Type</td><td><span class="col-badge badge-fixed">S · K (PK21/31)</span></td></tr>
+            <tr><td class="col-letter">C</td><td>documenttype</td><td>account nr</td><td>Document Type</td><td>G/L Account Nr</td><td><span class="col-badge badge-mapped">AB/ZA → SA</span></td></tr>
+            <tr><td class="col-letter">D</td><td>document date</td><td>amount debit</td><td>Document Date</td><td>Amount Debit</td><td><span class="col-note">PK 40</span></td></tr>
+            <tr><td class="col-letter">E</td><td>posting date</td><td>amount credit</td><td>Posting Date</td><td>Amount Credit</td><td><span class="col-note">PK 50</span></td></tr>
+            <tr><td class="col-letter">F</td><td>document header text</td><td>—</td><td>Doc Header Text</td><td>—</td><td></td></tr>
             <tr><td class="col-letter">G</td><td>reference nr</td><td>—</td><td>Reference Nr</td><td>—</td><td></td></tr>
-            <tr><td class="col-letter">H</td><td>currency</td><td>tax code</td><td>Currency</td><td>Tax Code</td><td></td></tr>
-            <tr><td class="col-letter">I</td><td>—</td><td>line item text</td><td>—</td><td>Line Item Text</td><td><span class="col-note">"Salary " + posting date if empty</span></td></tr>
-            <tr><td class="col-letter">J</td><td>—</td><td>cost center</td><td>—</td><td>Cost Center</td><td></td></tr>
-            <tr><td class="col-letter">K</td><td>—</td><td>internal order</td><td>—</td><td>Internal Order</td><td></td></tr>
+            <tr><td class="col-letter">H</td><td>currency</td><td>line item text</td><td>Currency</td><td>Line Item Text</td><td><span class="col-note">as in source</span></td></tr>
+            <tr><td class="col-letter">I</td><td>—</td><td>cost center</td><td>—</td><td>Cost Center</td><td><span class="col-note">as in source</span></td></tr>
+            <tr><td class="col-letter">J</td><td>—</td><td>internal order</td><td>—</td><td>Internal Order</td><td></td></tr>
           </tbody>
         </table>
         <div style="font-size:10px;color:#888;margin-top:8px">
@@ -450,7 +448,7 @@ function buildSummary() {
 
 /* ── ROW BUILDER ── */
 /*
-  Output structure — 11 columns (A–K):
+  Output structure — 10 columns (A–J):
   Col A : row type  (H / K / P)
   Col B : H1=company code          H2=account type (S/K/D)  K=company code   P=account type
   Col C : H1=documenttype          H2=posting key           K=doc type (SA)  P=posting key (40/50/...)
@@ -466,8 +464,8 @@ function buildSummary() {
 function buildRows() {
 
   const rows = [
-    ["H","company code","documenttype","document date","posting date","document header text","reference nr","currency","","",""],
-    ["H","account type (S/K/D)","posting key","account nr","amount debit","amount credit","","tax code","line item text","cost center","internal order"]
+    ["H","company code","documenttype","document date","posting date","document header text","reference nr","currency","",""],
+    ["H","account type (S/K/D)","account nr","amount debit","amount credit","","","line item text","cost center","internal order"]
   ];
 
   const docs = [...new Set(parsedData.map(r => r["Document Header Text"]).filter(Boolean))];
@@ -501,25 +499,20 @@ function buildRows() {
       const a  = l["Amount in local currency"];
       const isDebit  = [40,21,24,27,29].includes(pk);  // debit-side posting keys
       const isCredit = [50,31,34,37,39].includes(pk);  // credit-side posting keys
-      const lineText = (l["Text"] && String(l["Text"]).trim())
-        ? String(l["Text"]).trim()
-        : ("Salary " + postDate);     // default line item text when source has none
       rows.push([
         "P",
-        ([21,22,24,25,27,29,31,32,34,35,37,38,39].includes(pk) ? "K" : "S"),  // K=Vendor keys, S=GL (PK 40/50)
-        isNaN(pk) ? "" : pk,          // posting key (40/50/...)
-        String(l["G/L Account"] || ""), // account nr
-        isDebit  ? fmtAmt(a) : "",    // amount debit
-        isCredit ? fmtAmt(a) : "",    // amount credit
-        "",                           // blank (aligns with reference nr col)
-        l["Tax Code"] || l["Tax code"] || "",  // tax code
-        lineText,                     // line item text
-        mapCostCenter(l["Company Code"] || "", l["Cost Center"]),  // cost center (NEW→OLD mapping)
-        String(l["Order"] || "")      // internal order
+        ([21,22,24,25,27,29,31,32,34,35,37,38,39].includes(pk) ? "K" : "S"),
+        String(l["G/L Account"] || ""),
+        isDebit  ? fmtAmt(a) : "",
+        isCredit ? fmtAmt(a) : "",
+        "", "",
+        (l["Text"] ? String(l["Text"]).trim() : ""),
+        String(l["Cost Center"] == null ? "" : l["Cost Center"]).trim(),
+        String(l["Order"] || "")
       ]);
     });
 
-    rows.push(Array(11).fill(""));
+    rows.push(Array(10).fill(""));
   });
 
   return rows;
@@ -533,7 +526,7 @@ function generateFile() {
   const wb   = XLSX.utils.book_new();
   const ws   = XLSX.utils.aoa_to_sheet(rows);
 
-  ws["!cols"] = [4,18,13,13,14,22,14,10,20,14,14].map(w => ({ wch: w }));
+  ws["!cols"] = [4,18,13,13,14,22,14,10,20,14].map(w => ({ wch: w }));
 
   XLSX.utils.book_append_sheet(wb, ws, "Upload");
   const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
